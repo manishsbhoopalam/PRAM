@@ -9,7 +9,27 @@ import java.io.Serializable;
 public class RecordId implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private PageId pid;
+    private int tupleno;
 
+    public RecordId()
+    {
+	pid = new PageId()
+	{
+	    @Override
+	    public int[] serialize()
+	    	{return new int[0];}
+
+	    @Override
+	    public int getTableId()
+	    	{return 0;}
+
+	    @Override
+	    public int pageNumber()
+	    	{return 0;}
+	};
+	tupleno = 0;
+    }
     /**
      * Creates a new RecordId referring to the specified PageId and tuple
      * number.
@@ -21,6 +41,8 @@ public class RecordId implements Serializable {
      */
     public RecordId(PageId pid, int tupleno) {
         // some code goes here
+       this.pid = pid;
+       this.tupleno = tupleno;
     }
 
     /**
@@ -28,7 +50,7 @@ public class RecordId implements Serializable {
      */
     public int tupleno() {
         // some code goes here
-        return 0;
+        return tupleno;
     }
 
     /**
@@ -36,7 +58,7 @@ public class RecordId implements Serializable {
      */
     public PageId getPageId() {
         // some code goes here
-        return null;
+        return pid;
     }
 
     /**
@@ -48,7 +70,17 @@ public class RecordId implements Serializable {
     @Override
     public boolean equals(Object o) {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+	if(o == null)
+	    return false;
+	if(o == this)
+	    return true;
+	if(getClass() != o.getClass())
+	    return false;
+
+	RecordId recordId = (RecordId)o;
+	
+	return recordId.tupleno == this.tupleno && recordId.pid.equals(this.pid);
+        //throw new UnsupportedOperationException("implement this");
     }
 
     /**
@@ -60,7 +92,10 @@ public class RecordId implements Serializable {
     @Override
     public int hashCode() {
         // some code goes here
-        throw new UnsupportedOperationException("implement this");
+        int result = 17;
+
+	return 17*37+this.pid.hashCode()+tupleno;
+        //throw new UnsupportedOperationException("implement this");
 
     }
 
