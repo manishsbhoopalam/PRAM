@@ -33,11 +33,11 @@ public class SeqScan implements DbIterator {
      *            tableAlias.null, or null.null).
      */
     public SeqScan(TransactionId tid, int tableid, String tableAlias) {
-    	id=tid;
-    	taid=tableid;
-    	tas=tableAlias;
-    	fi=Database.getCatalog().getDbFile(taid);
-    	dbi=fi.iterator(id);
+    	this.id=tid;
+    	this.taid=tableid;
+    	this.tas=tableAlias;
+    	this.fi=Database.getCatalog().getDbFile(taid);
+    	this.dbi=fi.iterator(id);
     	
         
     }
@@ -77,8 +77,8 @@ public class SeqScan implements DbIterator {
      */
     public void reset(int tableid, String tableAlias) {
         // some code goes here
-    	taid=tableid;
-    	tas=tableAlias;
+    	this.taid=tableid;
+    	this.tas=tableAlias;
     }
 
     public SeqScan(TransactionId tid, int tableid) {
@@ -99,8 +99,7 @@ public class SeqScan implements DbIterator {
      * @return the TupleDesc with field names from the underlying HeapFile,
      *         prefixed with the tableAlias string from the constructor.
      */
-    @SuppressWarnings("null")
-	public TupleDesc getTupleDesc() {
+    public TupleDesc getTupleDesc() {
         // some code goes here
     	
         TupleDesc td,td1;
@@ -108,11 +107,9 @@ public class SeqScan implements DbIterator {
         int n=td.numFields();
         String[] na=null;
         Type[] ty = null;
-        int i=0;
-        while(i<n){
+        for(int i=0;i<n;i++){
         	na[i]=td.getFieldName(i);
-        	ty[i]=td.getFieldType(i);
-        	i+=1;
+        	ty[i]=td.getFieldType(i);		
         	
         }
         td1= new TupleDesc(ty,na);
