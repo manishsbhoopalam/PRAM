@@ -66,7 +66,7 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return 0;
+        return (int)Math.floor(((BufferPool.PAGE_SIZE * 8) / (td.getSize()*8 + 1) ));
 
     }
 
@@ -77,7 +77,7 @@ public class HeapPage implements Page {
     private int getHeaderSize() {        
         
         // some code goes here
-        return 0;
+        return (int) Math.ceil(getNumTuples() / 8);
                  
     }
     
@@ -103,7 +103,8 @@ public class HeapPage implements Page {
      */
     public HeapPageId getId() {
     // some code goes here
-    throw new UnsupportedOperationException("implement this");
+    	return pid;
+    // throw new UnsupportedOperationException("implement this");
     }
 
     /**
@@ -273,7 +274,13 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {
         // some code goes here
-        return 0;
+    	int emptySlots = 0;
+    	for(int i=0; i<numSlots;i++){
+    		if (!isSlotUsed(i)){
+    			emptySlots+=1;
+    		}
+    	}
+        return emptySlots;
     }
 
     /**
@@ -281,6 +288,11 @@ public class HeapPage implements Page {
      */
     public boolean isSlotUsed(int i) {
         // some code goes here
+    	if (i < numSlots){
+    		int n = i / 8;
+    		int b = i % 8;
+    		return (header[n] & (0x1 << b)) != 0;
+    	}
         return false;
     }
 
@@ -298,7 +310,13 @@ public class HeapPage implements Page {
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        return null;
+    	List<Tuple> tupleList = new ArrayList<Tuple>();
+    	for(int i=0; i<tuples.length; i++)
+    		if(((header[i/8] >> (i % 8) & 1) == 1))
+    	{
+    		tupleList.add(tuples[i]);
+    	}
+    	return tupleList.iterator();
     }
 
 }
