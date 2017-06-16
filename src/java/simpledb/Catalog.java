@@ -20,8 +20,20 @@ public class Catalog {
      * Constructor.
      * Creates a new, empty catalog.
      */
+
+	private List<table> tables ;
+    	static class table
+    	{
+            public DbFile dbFile;
+            public String name;
+            public String pkeyField;
+            public int tableId;
+
+    	}
+    
     public Catalog() {
         // some code goes here
+	tables = new ArrayList();
     }
 
     /**
@@ -35,6 +47,23 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+	table newtable = new table();
+        newtable.dbFile = file;
+        newtable.name = name;
+        newtable.pkeyField = pkeyField;
+        newtable.tableId = file.getId();
+        for (int i=0;i<tables.size();i++)
+	{
+            table t = tables.get(i);
+            if (t.name==name)
+	    {
+                newtable.tableId = t.tableId;
+                tables.set(i,newtable);
+                
+            }
+        }
+        this.tables.add(newtable);
+        System.out.println(newtable);
     }
 
     public void addTable(DbFile file, String name) {
@@ -58,7 +87,14 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+	for (table t:tables)
+	{
+            if (t.name==name)
+	    {
+                return t.tableId;
+            }
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -69,7 +105,15 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
+ 	for (table t :tables)
+	{
+            if (t.tableId==tableid)
+	    {
+                return t.dbFile.getTupleDesc();
+            }
+        }
         return null;
+        
     }
 
     /**
@@ -80,27 +124,66 @@ public class Catalog {
      */
     public DbFile getDbFile(int tableid) throws NoSuchElementException {
         // some code goes here
+	for (table t :tables)
+	{
+            if (t.tableId==tableid)
+	    {
+                return t.dbFile;
+            }
+        }
         return null;
     }
 
     public String getPrimaryKey(int tableid) {
         // some code goes here
+	for (table t :tables)
+	{
+            if (t.tableId==tableid)
+	    {
+                return t.pkeyField;
+            }
+        }
         return null;
     }
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        return null;
+	return  new Iterator<Integer>() 
+	{
+            private int index=0;
+            @Override
+            public boolean hasNext() 
+	    {
+                return index<tables.size();
+            }
+
+            @Override
+            public Integer next() 
+	    {
+                int count = index;
+                index++;
+                return tables.get(count).tableId;
+            }
+        };
+        
     }
 
     public String getTableName(int id) {
         // some code goes here
+	for (table t :tables)
+	{
+            if (t.tableId==id)
+	    {
+                return t.name;
+            }
+        }
         return null;
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+	tables = new ArrayList();
     }
     
     /**
