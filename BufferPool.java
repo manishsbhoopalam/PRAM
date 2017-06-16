@@ -30,7 +30,7 @@ public class BufferPool {
     ConcurrentHashMap<PageId,Page> m; 
     public BufferPool(int numPages) {
         // some code goes here
-    	max=numPages;
+    	this.max=numPages;
     	m=new ConcurrentHashMap<PageId,Page>();
     	
     }
