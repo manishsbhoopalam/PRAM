@@ -108,7 +108,7 @@ public class SeqScan implements DbIterator {
         String[] na=null;
         Type[] ty = null;
         for(int i=0;i<n;i++){
-        	na[i]=td.getFieldName(i);
+        	na[i]=tas+"-"+td.getFieldName(i);
         	ty[i]=td.getFieldType(i);		
         	
         }
