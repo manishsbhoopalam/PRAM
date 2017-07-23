@@ -8,7 +8,13 @@ import java.util.*;
 public class Filter extends Operator {
 
     private static final long serialVersionUID = 1L;
-
+    private Predicate p;
+    private DbIterator child;
+    private DbIterator[] children;
+    //Tuple tuples[];
+    //int numSlots;
+    //TupleDesc td;
+    
     /**
      * Constructor accepts a predicate to apply and a child operator to read
      * tuples to filter from.
@@ -20,29 +26,34 @@ public class Filter extends Operator {
      */
     public Filter(Predicate p, DbIterator child) {
         // some code goes here
+    	this.p=p;
+    	this.child=child;
     }
 
     public Predicate getPredicate() {
         // some code goes here
-        return null;
+        return this.p;
     }
 
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return child.getTupleDesc();
     }
 
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException {
         // some code goes here
+    	child.open();
     }
 
     public void close() {
         // some code goes here
+    	child.close();
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
         // some code goes here
+    	child.rewind();
     }
 
     /**
@@ -57,18 +68,26 @@ public class Filter extends Operator {
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException {
         // some code goes here
-        return null;
+    	child.open();
+    	while(child.hasNext())
+    	{	Tuple t=child.next(); 
+    		if(this.p.filter(t))
+    			return t;
+    	}child.close();
+    	    	return null;
     }
 
     @Override
     public DbIterator[] getChildren() {
         // some code goes here
-        return null;
+        return this.children;
     }
 
     @Override
     public void setChildren(DbIterator[] children) {
         // some code goes here
+    	children[0]=this.child;
+    	this.children[0]=children[0];
     }
 
 }
