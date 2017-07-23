@@ -2,6 +2,7 @@ package simpledb;
 
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -26,8 +27,9 @@ public class BufferPool {
      *
      * @param numPages maximum number of pages in this buffer pool.
      */
-    int max;
-    ConcurrentHashMap<PageId,Page> m; 
+    private int max;
+    private ConcurrentHashMap<PageId,Page> m; 
+    
     public BufferPool(int numPages) {
         // some code goes here
     	this.max=numPages;
@@ -119,6 +121,15 @@ public class BufferPool {
     public void insertTuple(TransactionId tid, int tableId, Tuple t)
         throws DbException, IOException, TransactionAbortedException {
         // some code goes here
+    	HeapFile hf = (HeapFile) Database.getCatalog().getDbFile(tableId);
+    	ArrayList<Page> dirty = hf.insertTuple(tid, t);
+    	ArrayList<Page> buffer;
+      	Iterator<Page> iter = dirty.iterator();
+    	while(iter.hasNext()){
+    		Page p = iter.next();
+    		p.markDirty(true, tid);
+    		dirty.add(p);	
+    	}
         // not necessary for proj1
     }
 
@@ -138,6 +149,10 @@ public class BufferPool {
     public  void deleteTuple(TransactionId tid, Tuple t)
         throws DbException, TransactionAbortedException {
         // some code goes here
+    	int tableId = t.getRecordId().getPageId().getTableId();
+    	HeapFile hf = (HeapFile) Database.getCatalog().getDbFile(tableId);
+    	Page p = hf.deleteTuple(tid, t);
+    	p.markDirty(true, tid);
         // not necessary for proj1
     }
 
@@ -169,6 +184,13 @@ public class BufferPool {
     private synchronized  void flushPage(PageId pid) throws IOException {
         // some code goes here
         // not necessary for proj1
+    	Page page = m.get(pid);
+    	TransactionId dirtyTId = page.isDirty();
+    	if (dirtyTId != null){
+    		DbFile databaseFile = Database.getCatalog().getDbFile(pid.getTableId());
+    		databaseFile.writePage(page);
+    		page.markDirty(false, dirtyTId);
+    	}
     }
 
     /** Write all pages of the specified transaction to disk.
