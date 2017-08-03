@@ -35,4 +35,4 @@ method, which was fairly simple.
 as simple as just creating a new tuple. I have also implemented the *markDirty()*, *isDirty()*, *isSlotUsed()* and *markSlotUsed()*,
 which were very simple.
 
-7)BufferPool: The *insertTuple()* and *deleteTuple()* methods was small, and it didn't take much time to implement them.
+7) BufferPool: The *insertTuple()* and *deleteTuple()* methods was small, and it didn't take much time to implement them.
