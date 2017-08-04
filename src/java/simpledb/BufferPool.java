@@ -1,9 +1,9 @@
 package simpledb;
 
 import java.io.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
+
 
 /**
  * BufferPool manages the reading and writing of pages into memory from
@@ -35,6 +35,7 @@ public class BufferPool {
      *
      * @param numPages maximum number of pages in this buffer pool.
      */
+
     public BufferPool(int numPages) {
         m_maxNumPages = numPages;
         m_cache = new HashMap<PageId, Page>();        
