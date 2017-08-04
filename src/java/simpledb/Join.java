@@ -122,7 +122,8 @@ public class Join extends Operator {
     		}
     		else 
     		{
-    			leftTuple = child1.next();
+    			lefttuple = child1.next();
+    			leftTuple = lefttuple;
     		}
     		while (child2.hasNext())
     		{
@@ -143,7 +144,8 @@ public class Join extends Operator {
     				return newTuple;
 				}
     		}
-    		rewind();
+    		lefttuple = null;
+    		child2.rewind();
     	}
         return null;
     }
