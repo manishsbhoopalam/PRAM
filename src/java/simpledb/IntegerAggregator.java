@@ -7,13 +7,13 @@ import java.util.*;
 public class IntegerAggregator implements Aggregator {
 
     private static final long serialVersionUID = 1L;
-
     private int gfield;
     private Type group_Type;
     private int afield;
     private Op what;
-    private HashMap<Field,Integer> agg_values;
-    private HashMap<Field,Integer> counter;
+    private HashMap<Field,ArrayList<Integer>> agg_values;
+    private TupleDesc td_child;
+
     /**
      * Aggregate constructor
      *
@@ -31,72 +31,44 @@ public class IntegerAggregator implements Aggregator {
 
     public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
         // some code goes here
-    	this.gfield = gbfield;
-    	this.group_Type = gbfieldtype;
-    	this.afield = afield;
-    	this.what= what;
-    	agg_values= new HashMap<Field, Integer>();
-    	counter= new HashMap<Field, Integer>();
+       this.gfield = gbfield;
+       this.group_Type = gbfieldtype;
+       this.afield = afield;
+       this.what= what;
+       agg_values=new HashMap<Field,ArrayList<Integer>>();
     }
 
-
-
-    /* * Merge a new tuple into the aggregate, grouping as indicated in the
+    /**
+     * Merge a new tuple into the aggregate, grouping as indicated in the
      * constructor
      *
      * @param tup
      *            the Tuple containing an aggregate field and a group-by field
      */
-    public void agg_operation(Aggregator.Op what,int agg_val_tuple,int agg_val_map,Field group_field)
-    {
-    	switch(what)
-    	{
-    	  case SUM: case AVG:
-		     counter.put(group_field,counter.get(group_field)+1);
-			 agg_val_map += agg_val_tuple;
-			 break;
-		  case COUNT:
-			 agg_val_map++;
-			 break;
-    	  case MIN:
-    			if(agg_val_tuple <agg_val_map)
-    				agg_val_map=agg_val_tuple;
-    			break;
-    	  case MAX:
-    		  if(agg_val_tuple>agg_val_map)
-  				agg_val_map=agg_val_tuple;
-  			break;
-		  default:
-				break;
-    	}
-    	agg_values.put(group_field, agg_val_map);
-    }
     public void mergeTupleIntoGroup(Tuple tup) {
         // some code goes here
-    	int agg_val_tuple = ((IntField) tup.getField(afield)).getValue();
-    	Field group_field;
+        td_child=tup.getTupleDesc();
+        Field group_field;
     	if(gfield==Aggregator.NO_GROUPING)
-    		group_field=null;
+    		if(group_Type==Type.INT_TYPE)
+    			group_field=new IntField(1);
+    		else
+    			group_field=new StringField("s",1);
     	else
     		group_field=tup.getField(gfield);
 
-      if(!agg_values.containsKey(group_field))
-    	{	if(what==Op.MAX)
-    		  agg_values.put(group_field, Integer.MIN_VALUE);
-    	    else if(what==Op.MIN)
-    	      agg_values.put(group_field, Integer.MAX_VALUE);
-    	    else
-    	    	agg_values.put(group_field,0);
-    	    counter.put(group_field, 0);
-    	}
+        if(!agg_values.containsKey(group_field))
+        { 	ArrayList<Integer> temp=new ArrayList<Integer>();
+        	agg_values.put(group_field,temp);
 
-	    int agg_val_map = agg_values.get(group_field);
-	   agg_operation(what,agg_val_tuple,agg_val_map,group_field);
+        }
+
+        agg_values.get(group_field).add(((IntField)tup.getField(afield)).getValue());
+
+
 
 
     }
-
-
 
     /**
      * Create a DbIterator over group aggregate results.
@@ -108,41 +80,83 @@ public class IntegerAggregator implements Aggregator {
      */
     public DbIterator iterator() {
         // some code goes here
-    	Type[] type;
-    	String[] name;
-    	if (gfield== Aggregator.NO_GROUPING)
-    	{
-    		name=new String[] {"aggregateValue"};
-    		type=new Type[] {Type.INT_TYPE};
+        //Create TupleDesc for output tuples
+        Type[] ty;
+        String[] st;
+        ArrayList<Tuple> output_tuplist=new ArrayList<Tuple>();
+	    if(gfield!=-1)
+    	{    ty=new Type[2];
+             st=new String[2];
+
+    	     ty[0]=group_Type;
+    	     ty[1]=Type.INT_TYPE;
+    	     st[0]=what.toString()+" "+td_child.getFieldName(afield);
+    	     st[1]=td_child.getFieldName(afield);
+
     	}
-    	else
+
+        else
     	{
-    		name=new String[] {"groupValue", "aggregateValue"};
-    		type=new Type[] {group_Type,Type.INT_TYPE};
+    		ty=new Type[1];
+    		st=new String[1];
+    	    ty[0]=Type.INT_TYPE;
+    		st[0]=what.toString()+" "+td_child.getFieldName(afield);
+
     	}
 
-        ArrayList<Tuple> output_tuples = new ArrayList<Tuple>();
-    	TupleDesc td = new TupleDesc(type,name);
-    	for (Field group_val : agg_values.keySet())
-    	{
-    		int output_aggVal;
-    		Tuple output_tup=new Tuple(td);
-    		if (what == Op.AVG)
-    			output_aggVal = agg_values.get(group_val)/counter.get(group_val);
-    		else
-    			output_aggVal = agg_values.get(group_val);
+        for (Field group_val : agg_values.keySet())
+        { int res = 0;
+          switch(what)
+            {
+    	   case SUM:
 
+                    for(Integer i:agg_values.get(group_val))
+                        res+=i;
+                    break;
+           case AVG:
+                    int count=agg_values.get(group_val).size();
+                    int sum=0;
+                    for(Integer i:agg_values.get(group_val))
+                        sum+=i;
+                    res=sum/count;
+                    break;
 
-    		if (gfield == Aggregator.NO_GROUPING)
-    			output_tup.setField(0, new IntField(output_aggVal));
+          case COUNT:
+                    res=agg_values.get(group_val).size();
+                    break;
+    	   case MIN:
+                    int min=agg_values.get(group_val).get(0);
+                    for(Integer i:agg_values.get(group_val))
+                        if(i<min)
+                            min=i;
+                    res=min;
+                    break;
+    	   case MAX:
+                    int max=agg_values.get(group_val).get(0);
+                    for(Integer i:agg_values.get(group_val))
+                        if(i>max)
+                            max=i;
+                    res=max;
+                    break;
+
+		   default:
+			     	break;
+
+            }
+            TupleDesc td=new TupleDesc(ty,st);
+            Tuple output_tup=new Tuple(td);
+            if (gfield == Aggregator.NO_GROUPING)
+    			output_tup.setField(0, new IntField(res));
 
     		else {
         		output_tup.setField(0, group_val);
-        		output_tup.setField(1, new IntField(output_aggVal));
+        		output_tup.setField(1, new IntField(res));
     		     }
-    		output_tuples.add(output_tup);
-    	}
-	return new TupleIterator(td, output_tuples);
-    }
+    		output_tuplist.add(output_tup);
+
+        }
+        return new TupleIterator(new TupleDesc(ty,st),output_tuplist);
+
+   }
 
 }
