@@ -34,8 +34,8 @@ public class Aggregate extends Operator {
      *            there is no grouping
      * @param aop
      *            The aggregation operator to use
-     * @throws TransactionAbortedException
-     * @throws DbException
+     * @throws TransactionAbortedException 
+     * @throws DbException 
      */
     public Aggregate(DbIterator child, int afield, int gfield, Aggregator.Op aop) throws DbException, TransactionAbortedException {
 	// some code goes here
@@ -52,6 +52,14 @@ public class Aggregate extends Operator {
     			aggregator = new IntegerAggregator(gfield, group_Type,afield, aop);
       else
     			aggregator = new StringAggregator(gfield, group_Type,afield, aop);
+     child.open();
+     while(child.hasNext())
+    	 aggregator.mergeTupleIntoGroup(child.next());
+
+    agg_it = aggregator.iterator();
+    child.close();
+
+
     }
 
     /**
@@ -91,7 +99,7 @@ public class Aggregate extends Operator {
     public String aggregateFieldName() {
 	// some code goes here
 	return child.getTupleDesc().getFieldName(afield);
-	}
+    }
 
     /**
      * @return return the aggregate operator
@@ -111,13 +119,7 @@ public class Aggregate extends Operator {
 	super.open();
     child.open();
     agg_it.open();
-    while(child.hasNext())
-   	 aggregator.mergeTupleIntoGroup(child.next());
-
-   agg_it = aggregator.iterator();
-   agg_it.open();
-
-
+    
     }
 
 
@@ -156,18 +158,18 @@ public class Aggregate extends Operator {
 	// some code goes here
 	TupleDesc td=child.getTupleDesc();
 	if(gfield!=-1)
-    	{   Type[] ty=new Type[2];
+    	{    Type[] ty=new Type[2];
 	     	String[] st=new String[2];
-
+    		 
     	     ty[0]=td.getFieldType(gfield);
     	     ty[1]=Type.INT_TYPE;
     	     st[0]=aop.toString()+" "+td.getFieldName(afield);
     	     st[1]=td.getFieldName(afield);
              return new TupleDesc(ty,st);
     	}
-
+    	     
    else
-    	{
+    	{  
     		Type[] ty=new Type[1];
     		String[] st=new String[1];
     	    ty[0]=Type.INT_TYPE;

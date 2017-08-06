@@ -60,12 +60,12 @@ public class IntegerAggregator implements Aggregator {
         if(!agg_values.containsKey(group_field))
         { 	ArrayList<Integer> temp=new ArrayList<Integer>();
         	agg_values.put(group_field,temp);
-
+          
         }
-
+	
         agg_values.get(group_field).add(((IntField)tup.getField(afield)).getValue());
-
-
+       
+      
 
 
     }
@@ -109,7 +109,7 @@ public class IntegerAggregator implements Aggregator {
           switch(what)
             {
     	   case SUM:
-
+                  
                     for(Integer i:agg_values.get(group_val))
                         res+=i;
                     break;

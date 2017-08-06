@@ -43,8 +43,8 @@ public class HeapPageId implements PageId {
      */
     public int hashCode() {
         // some code goes here
-    	 String toHash = "" + myTableId + myPgNo;
-         return toHash.hashCode();
+    	String toHash = "" + myTableId + myPgNo;
+    	return toHash.hashCode();
     }
 
     /**
