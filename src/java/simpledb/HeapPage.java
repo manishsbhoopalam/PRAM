@@ -318,7 +318,7 @@ public class HeapPage implements Page {
     		if (!isSlotUsed(i)){
     			emptySlots+=1;
     		}
-    	}
+    	}	
         return emptySlots;
     }
 

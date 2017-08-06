@@ -10,12 +10,12 @@ public class Filter extends Operator {
     private static final long serialVersionUID = 1L;
     private Predicate p;
     private DbIterator child;
-
-
+   
+   
     /**
      * Constructor accepts a predicate to apply and a child operator to read
      * tuples to filter from.
-     *
+     * 
      * @param p
      *            The predicate to filter tuples with
      * @param child
@@ -48,7 +48,7 @@ public class Filter extends Operator {
         // some code goes here
     	super.close();
     	child.close();
-
+    	
     }
 
     public void rewind() throws DbException, TransactionAbortedException {
@@ -60,7 +60,7 @@ public class Filter extends Operator {
      * AbstractDbIterator.readNext implementation. Iterates over tuples from the
      * child operator, applying the predicate to them and returning those that
      * pass the predicate (i.e. for which the Predicate.filter() returns true.)
-     *
+     * 
      * @return The next tuple that passes the filter, or null if there are no
      *         more tuples
      * @see Predicate#filter
@@ -73,8 +73,8 @@ public class Filter extends Operator {
     		Tuple tup = child.next();
     		if (p.filter(tup))
       			return tup;
-
-    	}
+    		
+    	} 
     	return null;
     }
 
@@ -87,7 +87,7 @@ public class Filter extends Operator {
     @Override
     public void setChildren(DbIterator[] children) {
         // some code goes here
-
+    
     	 this.child = children[0];
     }
 
